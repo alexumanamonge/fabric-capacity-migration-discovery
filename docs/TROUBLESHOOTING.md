@@ -96,5 +96,53 @@ When working with Fabric notebooks and Delta Lake:
 
 ---
 
+## Issue: DirectQuery Partition Has 0 Datasource References
+
+### Error Message
+```
+❌ Error creating semantic model: Dataset_Import_FailedToImportDataset
+DirectQuery partition 'Capacities' has '0' datasource reference(s) in its expression which is not allowed.
+```
+
+### Root Cause
+When creating a DirectLake semantic model, each partition must have:
+1. An `expressionSource` reference to the data source
+2. The `lakehouse` parameter passed to `create_semantic_model_from_bim()`
+
+### Solution Applied (Fixed in Latest Version)
+The notebook has been updated to include both requirements:
+
+```python
+# In partition definitions, add expressionSource
+"partitions": [
+    {
+        "name": "Capacities",
+        "mode": "directLake",
+        "source": {
+            "type": "entity",
+            "entityName": "Capacities",
+            "expressionSource": "DatabaseQuery",  # ← Added this
+            "schemaName": "dbo"
+        }
+    }
+]
+
+# When creating the model, pass lakehouse parameter
+labs.create_semantic_model_from_bim(
+    dataset=semantic_model_name,
+    bim_file=bim_model,
+    lakehouse=lakehouse  # ← Added this parameter
+)
+```
+
+### Verification
+After the fix, Step 10 should complete with:
+```
+Creating semantic model...
+✓ Semantic model 'Capacity Migration Analysis' created successfully
+```
+
+---
+
 **Last Updated:** November 2025  
-**Fixed in Version:** v1.0.1
+**Fixed in Version:** v1.0.2
