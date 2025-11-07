@@ -1,5 +1,44 @@
 # Common Issues and Solutions
 
+## Issue: "Bad Request" Error When Saving Delta Tables
+
+### Error Message
+```
+❌ Capacities | Error: An error occurred while calling o6730.load.
+: Operation failed: "Bad Request", 400, HEAD, http://onelake.dfs.fabric.microsoft.com/...
+```
+
+### Root Cause
+The notebook doesn't have a lakehouse **attached** to its Spark session. Even though the notebook creates/verifies the lakehouse existence, it must be explicitly **attached** for Delta table writes to work.
+
+### Solution
+
+**Before running any cells:**
+
+1. **Look at the left panel** of your Fabric notebook
+2. **Click "+ Add lakehouse"** (you'll see this if no lakehouse is attached)
+3. **Select "Existing lakehouse"**
+4. **Choose your lakehouse** (e.g., `CapacityMigrationLakehouse`)
+5. **Click "Add"**
+
+You should see the lakehouse appear in the left panel showing **Tables** and **Files** folders.
+
+**Then re-run the notebook from the beginning.**
+
+### Verification
+After attaching the lakehouse:
+- The left panel shows your lakehouse name with a green checkmark
+- Step 6-9 should save tables without errors
+- Step 10 should successfully verify tables with row counts
+
+### If Lakehouse Doesn't Exist Yet
+If the lakehouse hasn't been created:
+1. Run **Step 4** first (creates the lakehouse)
+2. Then **attach it** using the steps above
+3. Then **continue** from Step 5 onward
+
+---
+
 ## Issue: [CANNOT_MERGE_TYPE] Error in Step 5
 
 ### Error Message

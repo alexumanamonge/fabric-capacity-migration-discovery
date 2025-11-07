@@ -116,6 +116,20 @@ lakehouse = "CapacityMigrationLH"                    # Name for your Lakehouse
 - Avoid special characters in names
 - Keep names under 100 characters
 
+### **🔴 CRITICAL: Attach Lakehouse to Notebook**
+
+Before running any cells, you **must** attach the lakehouse to the notebook:
+
+1. **Look at the left panel** of the notebook interface
+2. **Click "Add lakehouse"** (if no lakehouse is attached)
+3. **Select "Existing lakehouse"**
+4. **Choose `CapacityMigrationLakehouse`** (or your custom name from Step 3)
+5. **Click "Add"**
+
+You should see the lakehouse appear in the left panel with the **Tables** and **Files** folders.
+
+**Why this matters:** The notebook writes Delta tables to the attached lakehouse. Without this connection, you'll get "Bad Request" errors when saving data.
+
 ---
 
 ## Running the Notebook
@@ -124,9 +138,10 @@ lakehouse = "CapacityMigrationLH"                    # Name for your Lakehouse
 
 **Option 1: Run All Cells (Recommended for First Run)**
 ```
-1. Click "Run all" in the top menu
-2. Monitor progress as each cell executes
-3. Total execution time: 5-15 minutes (depending on tenant size)
+1. Ensure lakehouse is attached (see above)
+2. Click "Run all" in the top menu
+3. Monitor progress as each cell executes
+4. Total execution time: 5-12 minutes (depending on tenant size)
 ```
 
 **Option 2: Run Cell by Cell**
