@@ -1,146 +1,159 @@
-# Microsoft Fabric Capacity Migration Discovery Tool
+﻿# Power BI Capacity Migration Discovery
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Microsoft Fabric](https://img.shields.io/badge/Microsoft-Fabric-blue)](https://www.microsoft.com/microsoft-fabric)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue)](https://docs.microsoft.com/powershell/)
 
-> **Automated discovery and assessment tool for migrating Power BI Premium/Embedded capacities to Microsoft Fabric**
+> **Automated discovery and migration readiness analysis for Power BI Premium/Embedded capacities**
 
-## 🎯 Overview
+---
 
-Jupyter notebook that analyzes your Power BI environment and identifies migration blockers before moving to Microsoft Fabric capacities.
+##  Overview
+
+PowerShell script that discovers all Power BI capacities, workspaces, items, and semantic models in your tenant, then analyzes migration readiness with actionable insights.
 
 **What it does:**
-- ✅ Discovers all capacities, workspaces, items, and semantic models
-- 🔍 Identifies 10+ categories of migration blockers and warnings
-- 📊 Saves data to Fabric Lakehouse for analysis
-- 📈 Generates interactive Power BI report
+-  Discovers capacities, workspaces, items, and semantic models
+-  Identifies migration blockers across 10 categories
+-  Exports to CSV files + interactive HTML report
+-  Runs anywhere with PowerShell (no workspace setup)
+-  Supports automation with service principals
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
-### Prerequisites
-
-- **Tenant Admin or Capacity Admin** permissions
-- **Fabric workspace** (Fabric capacity, Premium Gen2, or **Fabric Trial**)
-- XMLA Read/Write enabled on capacities
-
-> 💡 **Fabric Trial**: This notebook works perfectly on a free 60-day Fabric Trial capacity! Start your trial at [app.fabric.microsoft.com](https://app.fabric.microsoft.com)
-
-### Installation
-
-1. **Go to Microsoft Fabric** - [app.fabric.microsoft.com](https://app.fabric.microsoft.com)
-2. **Select/create a workspace** on Fabric capacity (or start a Fabric Trial)
-3. **Import the notebook**:
-   - Click "+ New item" → "Import notebook"
-   - Upload `notebooks/Capacity-Migration-Discovery.ipynb`
-4. **Run all cells** - Takes 5-12 minutes (collects data to Delta tables)
-5. **Create semantic model manually** - Follow Step 10 instructions (2 minutes)
-6. **Build Power BI report** - Add relationships and visuals (5-10 minutes)
-
-📖 **For detailed instructions, see the [Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**
-
----
-
-## � Migration Blockers Detected
-
-The notebook identifies issues across 10 categories:
-
-### 🛑 Critical Blockers
-- **Embedded (EM) SKUs** - Not supported in Fabric
-- **Incompatible features** - Require upgrade or removal
-
-### ⚠️ Warnings
-- **Dataflows Gen1** - Should upgrade to Gen2
-- **Paginated reports** - Need workload enabled
-- **Large models (>10GB)** - Require capacity planning
-- **Cross-region capacities** - Need migration strategy
-- **Inactive workspaces** - Cleanup recommended
-
-### ℹ️ Informational
-- **Premium P-SKUs** - Ready for migration
-- **RLS models** - Test after migration
-- **Deployment pipelines** - Verify configuration
-
----
-
-## 📊 Sample Output
-
+```powershell
+# Clone and run
+git clone https://github.com/alexumanamonge/fabric-capacity-migration-discovery.git
+cd fabric-capacity-migration-discovery/Scripts
+.\Discover-CapacityMigration.ps1 -OutputPath "C:\Reports"
 ```
-======================================================================
-MIGRATION READINESS ASSESSMENT
-======================================================================
 
-🛑 CRITICAL BLOCKERS (Must resolve before migration):
-1. Embedded capacity 'Prod-EM3' (SKU: EM3) - EM SKUs not supported
+Script will prompt for Power BI admin login and generate a timestamped report folder.
 
-⚠️  WARNINGS (Review and plan accordingly):
-1. 45 Dataflow Gen1 artifacts found
-2. 12 Paginated Reports found
-3. 3 Large Models (>10GB) detected
+---
 
-ℹ️  INFORMATIONAL (For your awareness):
-1. 5 Premium P-SKU capacities - Ready for Fabric migration
-2. 87 semantic models with RLS - Test after migration
+##  Requirements
 
-✓ Analysis saved to Lakehouse
-======================================================================
+**Permissions:**
+- Power BI **Tenant Administrator** OR **Capacity Administrator**
+
+**PowerShell:**
+- Windows PowerShell 5.1+ or PowerShell 7+
+- MicrosoftPowerBIMgmt module (auto-installed)
+
+**For Automation (Optional):**
+- Azure AD App Registration
+- API permissions: Tenant.Read.All, Capacity.Read.All, Workspace.Read.All
+
+---
+
+##  Usage
+
+### Interactive Login
+
+```powershell
+.\Discover-CapacityMigration.ps1 -OutputPath "C:\Reports"
+```
+
+### Service Principal (Automation)
+
+```powershell
+.\Discover-CapacityMigration.ps1 `
+    -TenantId "your-tenant-id" `
+    -ServicePrincipalId "your-app-id" `
+    -ServicePrincipalSecret "your-secret" `
+    -OutputPath "C:\Reports"
+```
+
+### Schedule Daily Scans
+
+```powershell
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' `
+    -Argument '-File "C:\Scripts\Discover-CapacityMigration.ps1" -OutputPath "C:\Reports"'
+$trigger = New-ScheduledTaskTrigger -Daily -At 2am
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Capacity Discovery"
 ```
 
 ---
 
-## 📁 Repository Structure
+##  Output Files
+
+Each run creates a timestamped folder with:
 
 ```
-Fabric-Capacity-Migration-Discovery/
-├── notebooks/
-│   └── Capacity-Migration-Discovery.ipynb    # Main notebook
-├── docs/
-│   ├── DEPLOYMENT-GUIDE.md                    # Setup instructions
-│   └── TROUBLESHOOTING.md                     # Common errors
-└── README.md                                  # This file
+CapacityMigration_2025-11-07_143022/
+ Capacities.csv              # All capacity details
+ Workspaces.csv              # Workspace assignments
+ WorkspaceItems.csv          # Reports, datasets, dashboards, dataflows
+ SemanticModels.csv          # Model details (storage mode, RLS)
+ MigrationAnalysis.csv       # Blocker summary
+ MigrationSummary.html       # Interactive report
 ```
 
 ---
 
-## �️ Troubleshooting
+##  Migration Analysis
 
-**"Requires tenant admin permissions"**
-- Verify Tenant Admin or Capacity Admin role
+The script identifies issues across **10 categories**:
 
-**"Error creating Lakehouse"**
-- Ensure workspace is on Fabric capacity (or Trial)
-- Check workspace permissions
+** Critical Blockers**
+- Embedded (EM) SKUs not supported
+- Unsupported features requiring updates
 
-**"Semantic model not found"**
-- Wait full timeout period (5 minutes)
-- Check troubleshooting guide: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+** Warnings**
+- Dataflows Gen1 (upgrade to Gen2 recommended)
+- Paginated reports (workload verification needed)
+- Large models >10GB (capacity planning required)
+- Cross-region capacities (migration planning needed)
+- Inactive workspaces (cleanup recommended)
 
----
-
-## 📖 Documentation
-
-- [Deployment Guide](docs/DEPLOYMENT-GUIDE.md) - Complete setup instructions
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Error solutions
-
----
-
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file
+**ℹ Informational**
+- Premium P-SKUs ready for migration
+- Models with Row-Level Security (testing recommended)
+- Dashboards and deployment pipelines
 
 ---
 
-## 🙏 Acknowledgments
+##  Documentation
 
-Built with Microsoft Fabric Semantic Link SDK
+Detailed documentation available in the Scripts folder:
+
+- **[Scripts/README.md](Scripts/README.md)** - Complete usage guide
+- **[Scripts/config.example.json](Scripts/config.example.json)** - Configuration template
+
+---
+
+##  Troubleshooting
+
+**Authentication Failed**
+- Verify Tenant Admin or Capacity Admin permissions
+
+**Module Not Found**
+- Run: Install-Module -Name MicrosoftPowerBIMgmt -Scope CurrentUser
+
+**Service Principal Issues**
+- Verify API permissions in Azure AD App Registration
+- Enable service principals in Power BI Admin Portal
+
+---
+
+##  License
+
+**MIT License** - See [LICENSE](LICENSE)
+
+```
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
 
 ---
 
 <div align="center">
 
-**Made for the Microsoft Fabric Community**
+**Built for the Power BI & Microsoft Fabric Community**
 
-[Report Issue](https://github.com/alexumanamonge/fabric-capacity-migration-discovery/issues) · [Documentation](docs/DEPLOYMENT-GUIDE.md)
+[Documentation](Scripts/README.md)  [Report Issue](https://github.com/alexumanamonge/fabric-capacity-migration-discovery/issues)
 
 </div>
