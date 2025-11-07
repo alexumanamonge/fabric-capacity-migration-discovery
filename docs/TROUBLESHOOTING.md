@@ -144,5 +144,51 @@ Creating semantic model...
 
 ---
 
+## Issue: Property ExpressionSource Cannot Be Found
+
+### Error Message
+```
+❌ Error creating semantic model: Workload_FailedToParseFile
+Property ExpressionSource of object "partition <oii>Capacities</oii> in table <oii>Capacities</oii>" refers to an object which cannot be found
+```
+
+### Root Cause
+The `expressionSource` property was incorrectly added as a direct string property in the partition source definition. For DirectLake partitions in Fabric, this property should not be included as a simple property - it needs to be properly defined as an expression object or omitted entirely.
+
+### Solution Applied (Fixed in Latest Version)
+Remove the `expressionSource` property from partition definitions. DirectLake partitions only need:
+
+```python
+"partitions": [
+    {
+        "name": "Capacities",
+        "mode": "directLake",
+        "source": {
+            "type": "entity",
+            "entityName": "Capacities",
+            "schemaName": "dbo"  # Only these 3 properties needed
+        }
+    }
+]
+```
+
+The lakehouse connection is established later in Step 11 using:
+```python
+labs.directlake.update_direct_lake_model_lakehouse_connection(
+    dataset=semantic_model_name,
+    lakehouse=lakehouse
+)
+```
+
+### Verification
+After the fix, Step 10 should complete with:
+```
+Creating semantic model...
+✓ Semantic model 'Capacity Migration Analysis' created successfully
+```
+
+---
+
 **Last Updated:** November 2025  
-**Fixed in Version:** v1.0.2
+**Fixed in Version:** v1.0.3
+
