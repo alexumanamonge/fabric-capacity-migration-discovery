@@ -144,51 +144,81 @@ Creating semantic model...
 
 ---
 
-## Issue: Property ExpressionSource Cannot Be Found
+## Issue: DirectQuery Partition Has 0 Datasource References (Persistent)
 
 ### Error Message
 ```
-❌ Error creating semantic model: Workload_FailedToParseFile
-Property ExpressionSource of object "partition <oii>Capacities</oii> in table <oii>Capacities</oii>" refers to an object which cannot be found
+❌ Error creating semantic model: Dataset_Import_FailedToImportDataset
+DirectQuery partition 'Capacities' has '0' datasource reference(s) in its expression which is not allowed.
 ```
 
 ### Root Cause
-The `expressionSource` property was incorrectly added as a direct string property in the partition source definition. For DirectLake partitions in Fabric, this property should not be included as a simple property - it needs to be properly defined as an expression object or omitted entirely.
+When using `create_semantic_model_from_bim()`, the model is created **without** an established lakehouse connection, even though DirectLake partitions require one. The lakehouse connection can only be established after the model exists, but the model creation fails if partitions lack datasource references.
 
-### Solution Applied (Fixed in Latest Version)
-Remove the `expressionSource` property from partition definitions. DirectLake partitions only need:
+### Solution Applied (Fixed in Latest Version - v1.0.4)
+Changed approach from using BIM definition to using semantic-link-labs helper functions that properly establish the lakehouse connection first:
 
 ```python
-"partitions": [
-    {
-        "name": "Capacities",
-        "mode": "directLake",
-        "source": {
-            "type": "entity",
-            "entityName": "Capacities",
-            "schemaName": "dbo"  # Only these 3 properties needed
-        }
-    }
-]
-```
-
-The lakehouse connection is established later in Step 11 using:
-```python
-labs.directlake.update_direct_lake_model_lakehouse_connection(
+# NEW APPROACH: Create blank model with lakehouse, then add tables
+labs.create_blank_semantic_model(
     dataset=semantic_model_name,
+    lakehouse=lakehouse  # Connection established immediately
+)
+
+# Then add tables one by one
+labs.add_table_to_direct_lake_semantic_model(
+    dataset=semantic_model_name,
+    table_name="Capacities",
+    lakehouse_table_name="Capacities",
     lakehouse=lakehouse
 )
+
+# Add relationships
+labs.add_relationship_to_semantic_model(
+    dataset=semantic_model_name,
+    from_table="Workspaces",
+    from_column="Capacity Id",
+    to_table="Capacities",
+    to_column="Capacity Id"
+)
+
+# Add measures
+labs.add_measure_to_semantic_model(
+    dataset=semantic_model_name,
+    table_name="Capacities",
+    measure_name="Total Capacities",
+    expression="COUNTROWS(Capacities)",
+    format_string="#,0"
+)
 ```
+
+This approach:
+1. ✅ Creates model with lakehouse connection from the start
+2. ✅ Adds tables incrementally with proper datasource references
+3. ✅ Avoids the BIM parsing and datasource reference errors
 
 ### Verification
 After the fix, Step 10 should complete with:
 ```
 Creating semantic model...
+Creating blank semantic model...
+✓ Blank semantic model 'Capacity Migration Analysis' created
+Adding tables to semantic model...
+✓ All tables added to semantic model
+Creating relationships...
+✓ Relationships created
+Adding measures...
+✓ Measures added
+
 ✓ Semantic model 'Capacity Migration Analysis' created successfully
 ```
+
+### Note
+Step 11 is no longer needed for establishing the lakehouse connection (it's done in Step 10), but it still handles report creation.
 
 ---
 
 **Last Updated:** November 2025  
-**Fixed in Version:** v1.0.3
+**Fixed in Version:** v1.0.4
+
 
