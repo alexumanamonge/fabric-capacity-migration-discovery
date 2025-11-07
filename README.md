@@ -40,11 +40,11 @@ Script will prompt for Power BI admin login and generate a timestamped report fo
 
 **PowerShell:**
 - Windows PowerShell 5.1+ or PowerShell 7+
-- MicrosoftPowerBIMgmt module (auto-installed)
+- `MicrosoftPowerBIMgmt` module (auto-installed)
 
 **For Automation (Optional):**
 - Azure AD App Registration
-- API permissions: Tenant.Read.All, Capacity.Read.All, Workspace.Read.All
+- API permissions: `Tenant.Read.All`, `Capacity.Read.All`, `Workspace.Read.All`
 
 ---
 
@@ -74,6 +74,18 @@ $action = New-ScheduledTaskAction -Execute 'PowerShell.exe' `
 $trigger = New-ScheduledTaskTrigger -Daily -At 2am
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Capacity Discovery"
 ```
+
+---
+
+##  Parameters
+
+| Parameter | Type | Required | Description | Default |
+|-----------|------|----------|-------------|---------|
+| `OutputPath` | String | No | Report output location | Current directory |
+| `TenantId` | String | No | Azure AD Tenant ID | - |
+| `ServicePrincipalId` | String | No | Application ID | - |
+| `ServicePrincipalSecret` | String | No | Application secret | - |
+| `GenerateHtmlReport` | Boolean | No | Create HTML summary | `True` |
 
 ---
 
@@ -115,22 +127,13 @@ The script identifies issues across **10 categories**:
 
 ---
 
-##  Documentation
-
-Detailed documentation available in the Scripts folder:
-
-- **[Scripts/README.md](Scripts/README.md)** - Complete usage guide
-- **[Scripts/config.example.json](Scripts/config.example.json)** - Configuration template
-
----
-
 ##  Troubleshooting
 
 **Authentication Failed**
 - Verify Tenant Admin or Capacity Admin permissions
 
 **Module Not Found**
-- Run: Install-Module -Name MicrosoftPowerBIMgmt -Scope CurrentUser
+- Run: `Install-Module -Name MicrosoftPowerBIMgmt -Scope CurrentUser`
 
 **Service Principal Issues**
 - Verify API permissions in Azure AD App Registration
@@ -154,6 +157,6 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **Built for the Power BI & Microsoft Fabric Community**
 
-[Documentation](Scripts/README.md)  [Report Issue](https://github.com/alexumanamonge/fabric-capacity-migration-discovery/issues)
+[Report Issue](https://github.com/alexumanamonge/fabric-capacity-migration-discovery/issues)
 
 </div>
