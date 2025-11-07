@@ -34,7 +34,9 @@ Jupyter notebook that analyzes your Power BI environment and identifies migratio
 3. **Import the notebook**:
    - Click "+ New item" → "Import notebook"
    - Upload `notebooks/Capacity-Migration-Discovery.ipynb`
-4. **Run all cells** - Takes 5-15 minutes
+4. **Run all cells** - Takes 5-12 minutes (collects data to Delta tables)
+5. **Create semantic model manually** - Follow Step 10 instructions (2 minutes)
+6. **Build Power BI report** - Add relationships and visuals (5-10 minutes)
 
 📖 **For detailed instructions, see the [Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**
 

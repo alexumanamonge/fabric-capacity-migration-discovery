@@ -214,11 +214,44 @@ Adding measures...
 ```
 
 ### Note
-Step 11 is no longer needed for establishing the lakehouse connection (it's done in Step 10), but it still handles report creation.
+This approach was used in v1.0.4 but has been replaced with manual UI-based creation in v1.0.5+ for better reliability.
 
 ---
 
-**Last Updated:** November 2025  
-**Fixed in Version:** v1.0.4
+## Why Manual Semantic Model Creation? (v1.0.5+)
+
+### Question
+"Why doesn't the notebook create the semantic model automatically?"
+
+### Answer
+**Microsoft's official recommendation** for DirectLake semantic models is to create them via the Fabric UI, not programmatically.
+
+According to [Microsoft's documentation](https://learn.microsoft.com/fabric/fundamentals/direct-lake-create-lakehouse):
+> "From an open Lakehouse you can choose **New semantic model** to create a new semantic model in Direct Lake storage mode."
+
+### Why This Approach?
+1. **Reliability**: The UI method is stable and well-tested (2-click process)
+2. **Official Support**: Documented and recommended by Microsoft
+3. **No API Issues**: Avoids undocumented semantic-link-labs API limitations
+4. **Simplicity**: Takes ~2 minutes vs. debugging programmatic creation
+
+### What semantic-link-labs CAN Do
+- ✅ Read from existing semantic models
+- ✅ Modify existing models (add measures, relationships)
+- ✅ Analyze semantic model metadata
+- ❌ Create DirectLake models reliably (undocumented/unstable APIs)
+
+### Previous Attempts (All Failed)
+The notebook previously attempted multiple programmatic approaches:
+1. `create_semantic_model_from_bim()` - Failed: "0 datasource references"
+2. `create_blank_semantic_model(lakehouse=...)` - Failed: "unexpected keyword argument"
+3. `lakehouse_attached_semantic_model()` - Failed: Function doesn't exist in stable releases
+
+**Result**: Switched to Microsoft's recommended UI-based approach for reliability.
+
+---
+
+**Last Updated:** January 2025  
+**Current Version:** v1.0.5
 
 

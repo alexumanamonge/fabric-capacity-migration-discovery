@@ -147,11 +147,16 @@ lakehouse = "CapacityMigrationLH"                    # Name for your Lakehouse
 | 7    | Workspace data collection | 1-3 minutes |
 | 8    | Workspace items collection | 2-5 minutes |
 | 9    | Semantic models collection | 1-3 minutes |
-| 10   | Migration blocker analysis | 30 seconds |
-| 11   | Model creation | 1-2 minutes |
-| 12   | Report creation | 1-2 minutes |
+| 10   | Data verification | 10 seconds |
 
-**Total:** 5-15 minutes (varies by tenant size)
+**Total Notebook Execution:** 5-12 minutes (varies by tenant size)
+
+**Manual Steps After Notebook:**
+- Create DirectLake semantic model (2 minutes) - see instructions in Step 10 output
+- Add relationships and measures in model (3-5 minutes)
+- Create Power BI report (5-10 minutes)
+
+**Complete End-to-End:** 15-30 minutes
 
 ### Monitoring Progress
 
