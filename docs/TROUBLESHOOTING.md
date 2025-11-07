@@ -1,0 +1,100 @@
+# Common Issues and Solutions
+
+## Issue: [CANNOT_MERGE_TYPE] Error in Step 5
+
+### Error Message
+```
+❌ Error collecting capacity data: [CANNOT_MERGE_TYPE] Can not merge type `ArrayType` and `StringType`.
+```
+
+### Root Cause
+This error occurs when trying to concatenate DataFrames with incompatible column types. The `Admins` column in the capacity data is an array type, but when creating the "Non Premium (Shared)" record, there was a type mismatch.
+
+### Solution Applied (Fixed in Latest Version)
+The notebook has been updated to convert the `Admins` column to JSON string representation before concatenating:
+
+```python
+# Convert Admins column to string to avoid type conflicts
+if 'Admins' in df_capacities.columns:
+    df_capacities['Admins'] = df_capacities['Admins'].apply(
+        lambda x: json.dumps(x) if x is not None else None
+    )
+
+# Now both records have the same type (string)
+new_record = pd.DataFrame([{
+    "Capacity Id": "-1",
+    "Capacity Name": "Non Premium (Shared)",
+    "Sku": "Shared",
+    "Region": "N/A",
+    "State": "Active",
+    "Admins": json.dumps(["N/A"])  # Converted to JSON string
+}])
+```
+
+### If You're Still Seeing This Error
+
+1. **Update the notebook**: Pull the latest version from the repository
+   ```bash
+   git pull origin main
+   ```
+
+2. **Re-upload to Fabric**: Delete the old notebook and upload the new version
+
+3. **Alternative workaround**: If you can't update, modify Step 5 cell directly in Fabric:
+   - Find the line: `"Admins": ["N/A"]`
+   - Add the conversion code shown above before creating `new_record`
+
+### Verification
+After the fix, Step 5 should complete with:
+```
+✓ Collected [X] Premium/Fabric capacities
+
+Capacity Summary:
+[SKU breakdown]
+
+✓ Capacities data saved to Lakehouse
+```
+
+---
+
+## Other Common Type Mismatch Errors
+
+### Issue: Upstream Datasets or Users Column Errors
+
+**Symptoms:** Similar merge errors in Step 8 (Semantic Models)
+
+**Solution:** The notebook already handles this by converting arrays to JSON strings:
+```python
+df_semantic_models["Upstream Datasets"] = df_semantic_models["Upstream Datasets"].apply(
+    lambda x: json.dumps(x) if x and x != "[]" else None
+)
+df_semantic_models["Users"] = df_semantic_models["Users"].apply(
+    lambda x: json.dumps(x) if x and x != "[]" else None
+)
+```
+
+### Issue: Date/DateTime Format Errors
+
+**Symptoms:** Cannot write datetime columns to Delta Lake
+
+**Solution:** Convert to string format:
+```python
+df['Created Date'] = df['Created Date'].astype(str)
+```
+
+---
+
+## Prevention Tips
+
+When working with Fabric notebooks and Delta Lake:
+
+1. ✅ **Always convert complex types** (arrays, objects) to JSON strings
+2. ✅ **Check column dtypes** before concatenating DataFrames
+3. ✅ **Use `ignore_index=True`** when concatenating
+4. ✅ **Handle null values** explicitly (fillna, replace)
+5. ✅ **Test with small datasets** first before running on full tenant
+
+---
+
+**Last Updated:** November 2025  
+**Fixed in Version:** v1.0.1
