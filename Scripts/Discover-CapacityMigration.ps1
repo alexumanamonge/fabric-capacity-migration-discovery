@@ -170,7 +170,7 @@ if ($capacitiesRaw) {
             'Name' = (Get-Prop -Object $c -Name 'displayName')
             'SKU' = (Get-Prop -Object $c -Name 'sku')
             'State' = (Get-Prop -Object $c -Name 'state')
-            'Region' = (Get-Prop -Object $c -Name 'location')
+            'Region' = (Get-Prop -Object $c -Name 'region')
         }
     }
 }
@@ -184,10 +184,10 @@ if ($workspacesRaw) {
         $workspaces += [PSCustomObject]@{
             'Workspace Id' = (Get-Prop -Object $ws -Name 'id')
             'Name' = (Get-Prop -Object $ws -Name 'name')
+            'Type' = (Get-Prop -Object $ws -Name 'type')
             'State' = (Get-Prop -Object $ws -Name 'state')
-            'Capacity Id' = (Get-Prop -Object $ws -Name 'capacityId')
+            'IsOnDedicatedCapacity' = (Get-Prop -Object $ws -Name 'isOnDedicatedCapacity')
             'IsReadOnly' = (Get-Prop -Object $ws -Name 'isReadOnly')
-            'CreatedDate' = (Get-Prop -Object $ws -Name 'createdDateTime')
         }
     }
 }
@@ -281,19 +281,18 @@ foreach ($ds in $datasets) {
     $detResult = Try-GetAdminEndpoint -RelativeUrl "admin/datasets/$did"
     if ($detResult.Success) {
         $det = $detResult.Data
-        $sizeBytes = Get-Prop -Object $det -Name 'size'
-        $sizeMB = if ($sizeBytes) { [math]::Round($sizeBytes / 1MB, 2) } else { 0 }
         
         $semanticModels += [PSCustomObject]@{
             'DatasetId' = $did
             'Name' = $ds.Name
             'WorkspaceId' = $ds.WorkspaceId
             'WorkspaceName' = $ds.WorkspaceName
+            'ConfiguredBy' = Get-Prop -Object $det -Name 'configuredBy'
             'IsRefreshable' = Get-Prop -Object $det -Name 'isRefreshable'
             'IsEffectiveIdentityRequired' = Get-Prop -Object $det -Name 'isEffectiveIdentityRequired'
-            'TargetStorageMode' = if (Get-Prop -Object $det -Name 'tables') { (Get-Prop -Object (Get-Prop -Object $det -Name 'tables') -Name 'storageMode') } else { '' }
-            'SizeBytes' = $sizeBytes
-            'SizeMB' = $sizeMB
+            'TargetStorageMode' = Get-Prop -Object $det -Name 'targetStorageMode'
+            'ContentProviderType' = Get-Prop -Object $det -Name 'contentProviderType'
+            'IsOnPremGatewayRequired' = Get-Prop -Object $det -Name 'isOnPremGatewayRequired'
         }
     }
     else {
