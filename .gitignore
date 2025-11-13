@@ -53,6 +53,12 @@ Thumbs.db
 data/
 lakehouse/
 
+# Output files
+Scripts/output/*.xlsx
+Scripts/output/*.csv
+Scripts/output/*.html
+!Scripts/output/.gitkeep
+
 # Credentials (NEVER commit these)
 *.credentials
 *.config
